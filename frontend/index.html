@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Premium Business Card - DuoBuddy</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://res.cloudinary.com data:; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:5050 https://*.emergentagent.com https://duobuddy.my; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
   
   <style>
     :root {
@@ -499,9 +500,7 @@
     .footer-links a:hover { text-decoration: underline; }
   </style>
   <style>@view-transition { navigation: auto; }</style>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script type="text/javascript">
-    // --- Company Dashboard Functions ---
+  <script src="https://cdn.tailwindcss.com" type="text/javascript">    // --- Company Dashboard Functions ---
 
     function switchCompanyTab(tab) {
       document.querySelectorAll('.company-tab-content').forEach(el => el.style.display = 'none');
@@ -2603,10 +2602,24 @@
       const host = location.hostname;
       const port = location.port;
       
-      // Always use relative paths for API calls
-      // On Emergent: Kubernetes ingress routes /api/* to backend (port 8001) → Ruby (port 5050)
-      // On Localhost: Node.js server (port 3000) proxies /api/* to backend (port 8001) → Ruby (port 5050)
-      return '';
+      // Emergent Preview Environment
+      // Kubernetes ingress routes /api/* requests to backend
+      if (host.includes('preview.emergentagent.com') || host.includes('emergentagent.com')) {
+        return '';  // Use relative path, same origin
+      }
+      
+      // Localhost environment (Direct connection to Ruby server)
+      if (host === 'localhost' || host === '127.0.0.1') {
+        return port === '5050' ? '' : 'http://localhost:5050';
+      }
+      
+      // Vercel Preview environment
+      if (host.includes('vercel.app')) {
+        return 'https://your-backend-url.ngrok-free.app';
+      }
+      
+      // Production environment  
+      return ''; 
     })();
     
     function getPublicOrigin(){

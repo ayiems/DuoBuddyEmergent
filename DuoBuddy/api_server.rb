@@ -1636,7 +1636,20 @@ mount_api server, '/api/admin/companies/manage' do |req, res|
     company['address'] = body['billingAddress'] if body['billingAddress'] # Sync
     company['notes'] = body['notes'] if body['notes']
     company['status'] = body['status'] if body['status']
+    # New branding fields
+    company['domain'] = body['domain'] if body['domain']
+    company['logo'] = body['logo'] if body['logo']
+    company['primaryColor'] = body['primaryColor'] if body['primaryColor']
     
+    write_companies(companies)
+    res.body = { ok: true, company: company }.to_json
+    
+  elsif action == 'update_status'
+    new_status = body['status']
+    unless ['active', 'suspended'].include?(new_status)
+      res.status = 400; res.body = { error: 'invalid_status' }.to_json; next
+    end
+    company['status'] = new_status
     write_companies(companies)
     res.body = { ok: true, company: company }.to_json
     

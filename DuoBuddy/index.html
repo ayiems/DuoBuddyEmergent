@@ -6341,14 +6341,23 @@ END:VCARD`;
 
     function populateCompanySettings(company){
       const setVal = function(id, val){ const el = document.getElementById(id); if (el) el.value = val || ''; };
-      setVal('companySettingsDomain', ''); // TODO: add domain field to backend
-      setVal('companySettingsLogo', ''); // TODO
-      setVal('companySettingsColor', ''); // TODO
+      setVal('companySettingsDomain', company.domain || '');
+      setVal('companySettingsLogo', company.logo || '');
+      setVal('companySettingsColor', company.primaryColor || '#1E3A8A');
       setVal('companySettingsBillingName', company.name);
       setVal('companySettingsBillingEmail', company.email);
       setVal('companySettingsBillingPhone', company.phone);
       setVal('companySettingsAddress', company.billingAddress || company.address);
       setVal('companySettingsNotes', company.notes);
+      
+      // Update company status display
+      const statusLabel = document.getElementById('companyStatusLabel');
+      if (statusLabel) {
+        const status = company.status || 'active';
+        statusLabel.textContent = status.toUpperCase();
+        statusLabel.className = 'px-3 py-1 rounded text-sm font-bold ' + 
+          (status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
+      }
       
       // Update button onclick to pass ID
       const btn = document.querySelector('button[onclick^="handleSaveCompanySettings"]');

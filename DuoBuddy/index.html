@@ -6370,23 +6370,79 @@ END:VCARD`;
       const data = {
         id: id,
         action: 'update',
-        companyName: document.getElementById('companySettingsBillingName').value.trim(), // Reuse billing name as company name
+        companyName: document.getElementById('companySettingsBillingName').value.trim(),
         contactEmail: document.getElementById('companySettingsBillingEmail').value.trim(),
         contactPhone: document.getElementById('companySettingsBillingPhone').value.trim(),
         billingAddress: document.getElementById('companySettingsAddress').value.trim(),
-        notes: document.getElementById('companySettingsNotes').value.trim()
+        notes: document.getElementById('companySettingsNotes').value.trim(),
+        domain: document.getElementById('companySettingsDomain').value.trim(),
+        logo: document.getElementById('companySettingsLogo').value.trim(),
+        primaryColor: document.getElementById('companySettingsColor').value.trim()
       };
       
       try {
         const r = await apiRequest('/api/admin/companies/manage', { method: 'POST', body: JSON.stringify(data) });
         if(r.ok) {
            showToast('✅ Company settings saved');
-           renderCompanyList(); // refresh list
+           await renderCompanyList(); // refresh list
+           // Refresh current company detail
+           const company = companies.find(c => c.id === id);
+           if (company) {
+             renderCompanyDetail(company);
+           }
         } else {
-           showToast('Failed to save settings', 'error');
+           const err = await r.json().catch(() => ({}));
+           showToast(err.error || 'Failed to save settings', 'error');
         }
       } catch(e) {
-         showToast('Network error', 'error');
+         console.error('Save settings error:', e);
+         showToast('Network error: ' + e.message, 'error');
+      }
+    }
+    
+    // Toggle Company Status
+    async function toggleCompanyStatus(id){
+      if (!isAdmin) { showToast('Only admin can change company status', 'error'); return; }
+      
+      const company = companies.find(c => c.id === id);
+      if (!company) {
+        showToast('Company not found', 'error');
+        return;
+      }
+      
+      const currentStatus = company.status || 'active';
+      const newStatus = currentStatus === 'active' ? 'suspended' : 'active';
+      const confirmMsg = newStatus === 'suspended' 
+        ? 'Are you sure you want to SUSPEND this company? They will not be able to purchase cards or access the platform.'
+        : 'Are you sure you want to ACTIVATE this company? They will regain access to purchase cards and use the platform.';
+      
+      if (!confirm(confirmMsg)) return;
+      
+      try {
+        const r = await apiRequest('/api/admin/companies/manage', { 
+          method: 'POST', 
+          body: JSON.stringify({
+            id: id,
+            action: 'update_status',
+            status: newStatus
+          }) 
+        });
+        
+        if(r.ok) {
+           showToast('✅ Company status updated to ' + newStatus.toUpperCase());
+           await renderCompanyList(); // refresh list
+           // Update current view
+           const updatedCompany = companies.find(c => c.id === id);
+           if (updatedCompany) {
+             populateCompanySettings(updatedCompany);
+           }
+        } else {
+           const err = await r.json().catch(() => ({}));
+           showToast(err.error || 'Failed to update status', 'error');
+        }
+      } catch(e) {
+         console.error('Toggle status error:', e);
+         showToast('Network error: ' + e.message, 'error');
       }
     }
     

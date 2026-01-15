@@ -1,0 +1,15 @@
+[
+  {
+    "id": "4daa897e9aef00df",
+    "name": "Test Company",
+    "email": "test@company.com",
+    "phone": "123456789",
+    "address": "123 Corporate Blvd",
+    "billingAddress": "123 Corporate Blvd",
+    "notes": "First client",
+    "status": "active",
+    "createdAt": "2026-01-14T22:20:11+08:00",
+    "contactPerson": "Admin",
+    "registrationNumber": ""
+  }
+]

@@ -2603,26 +2603,10 @@
       const host = location.hostname;
       const port = location.port;
       
-      // Emergent Preview Environment
-      // Use port 5050 directly on Emergent deployment
-      if (host.includes('preview.emergentagent.com') || host.includes('emergentagent.com')) {
-        // On Emergent, connect to Ruby backend on port 5050
-        return window.location.protocol + '//' + host.replace(':3000', ':5050');
-      }
-      
-      // Localhost environment - use proxy through frontend server
-      if (host === 'localhost' || host === '127.0.0.1') {
-        // On localhost, use empty string to go through Node.js proxy
-        return '';
-      }
-      
-      // Vercel Preview environment
-      if (host.includes('vercel.app')) {
-        return 'https://your-backend-url.ngrok-free.app';
-      }
-      
-      // Production environment  
-      return ''; 
+      // Always use relative paths for API calls
+      // On Emergent: Kubernetes ingress routes /api/* to backend (port 8001) → Ruby (port 5050)
+      // On Localhost: Node.js server (port 3000) proxies /api/* to backend (port 8001) → Ruby (port 5050)
+      return '';
     })();
     
     function getPublicOrigin(){

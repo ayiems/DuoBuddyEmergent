@@ -6204,7 +6204,9 @@ END:VCARD`;
         if(label) label.textContent = 'Total Cards Ordered';
         
         renderMissingDomains();
-      }catch(e){}
+      }catch(e){
+        console.error('Error updating company management stats:', e);
+      }
     }
 
     function renderMissingDomains(){

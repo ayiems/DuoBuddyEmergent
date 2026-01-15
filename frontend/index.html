@@ -2602,15 +2602,15 @@
       const host = location.hostname;
       const port = location.port;
       
-      // Emergent Preview Environment
-      // Kubernetes ingress routes /api/* requests to backend
+      // Emergent Preview Environment - use relative paths
+      // Kubernetes ingress routes /api/* to backend
       if (host.includes('preview.emergentagent.com') || host.includes('emergentagent.com')) {
-        return '';  // Use relative path, same origin
+        return '';
       }
       
-      // Localhost environment (Direct connection to Ruby server)
+      // Localhost environment - use relative paths (proxied by Node.js server)
       if (host === 'localhost' || host === '127.0.0.1') {
-        return port === '5050' ? '' : 'http://localhost:5050';
+        return '';
       }
       
       // Vercel Preview environment

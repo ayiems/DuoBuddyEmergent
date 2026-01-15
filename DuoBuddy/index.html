@@ -6097,20 +6097,25 @@ END:VCARD`;
 
     async function renderCompanyList(){
       console.log('Rendering Company List...');
+      
+      // Wait for DOM to be ready
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
       const container = document.getElementById('companyList'); 
       if (!container) { 
         console.error('Company list container not found!'); 
-        // Attempt to find the page and ensure it is active
         const page = document.getElementById('company-management');
-        if (page && !page.classList.contains('active')) {
-           console.log('Activating company management page forcedly');
-           showPage('company-management');
-           return; // showPage will call renderCompanyList again
+        if (!page) {
+          console.error('Company management page not found in DOM!');
+          return;
         }
+        // Show error in the page itself
+        page.innerHTML = '<div class="max-w-7xl mx-auto px-4 py-10"><div class="card p-8"><div class="text-center text-red-600"><h3 class="text-2xl font-bold mb-4">❌ System Error</h3><p>Company list container could not be loaded. Please refresh the page.</p></div></div></div>';
         return; 
       }
       
-      container.innerHTML = '<div class="text-gray-500">Loading companies...</div>';
+      // Show loading state
+      container.innerHTML = '<div class="text-center py-10"><div class="loading inline-block"></div><p class="text-gray-600 mt-4">Loading companies...</p></div>';
       
       const url = '/api/admin/companies';
       console.log('Fetching:', API_BASE + url);
@@ -6121,12 +6126,24 @@ END:VCARD`;
         
         if (!r.ok) {
           if (r.status === 401) {
-             container.innerHTML = '<div class="text-center p-8"><h3 class="text-xl font-bold text-red-600">Session Expired</h3><p class="text-gray-600 mt-2">Please <a href="#" onclick="showPage(\'login\')" class="text-blue-600 underline">log in again</a> to view companies.</p></div>';
+             container.innerHTML = '<div class="text-center p-8"><h3 class="text-xl font-bold text-red-600">🔒 Session Expired</h3><p class="text-gray-600 mt-2">Please <a href="#" onclick="showPage(\'login\')" class="text-blue-600 underline">log in again</a> to view companies.</p></div>';
              return;
           }
-          throw new Error('Failed to load companies (Status: ' + r.status + ' from ' + (API_BASE+url) + ')');
+          if (r.status === 403) {
+             container.innerHTML = '<div class="text-center p-8"><h3 class="text-xl font-bold text-red-600">⛔ Access Restricted</h3><p class="text-gray-600 mt-2">You do not have permission to view companies.</p></div>';
+             return;
+          }
+          throw new Error('Failed to load companies (Status: ' + r.status + ')');
         }
+        
         const data = await r.json();
+        if (!data || !data.companies) {
+          console.error('Invalid response format:', data);
+          container.innerHTML = '<div class="text-center p-8"><h3 class="text-xl font-bold text-gray-800">📊 No Companies Yet</h3><p class="text-gray-600 mt-2 mb-4">No companies have been registered yet.</p><button class="btn btn-primary" onclick="openCreateCompanyModal()">➕ Create First Company</button></div>';
+          updateCompanyManagement();
+          return;
+        }
+        
         companies = data.companies || [];
         console.log('Companies loaded:', companies.length);
         
@@ -6134,14 +6151,22 @@ END:VCARD`;
         let list = companies;
         if (q) list = list.filter(c => c.name.toLowerCase().includes(q));
         
-        if (list.length === 0) { container.innerHTML = '<div class="text-gray-500">No companies found</div>'; return; }
+        if (list.length === 0) { 
+          if (q) {
+            container.innerHTML = '<div class="text-center p-8"><h3 class="text-xl font-bold text-gray-800">🔍 No Results</h3><p class="text-gray-600 mt-2">No companies match your search: "' + q + '"</p></div>';
+          } else {
+            container.innerHTML = '<div class="text-center p-8"><h3 class="text-xl font-bold text-gray-800">📊 No Companies Yet</h3><p class="text-gray-600 mt-2 mb-4">No companies have been registered yet.</p><button class="btn btn-primary" onclick="openCreateCompanyModal()">➕ Create First Company</button></div>';
+          }
+          updateCompanyManagement();
+          return; 
+        }
         
         container.innerHTML = list.map(c => {
           return (
-            '<div class="card p-6">'
+            '<div class="card p-6" data-testid="company-card-' + c.id + '">'
             + '<div class="flex justify-between items-center mb-4">'
             + '<div>'
-            + '<h3 class="text-xl font-bold text-gray-800">' + c.name + '</h3>'
+            + '<h3 class="text-xl font-bold text-gray-800">' + (c.name || 'Unnamed Company') + '</h3>'
             + '<div class="text-sm text-gray-600 mt-1">' + (c.email || 'No email') + '</div>'
             + '<div class="mt-2"><span class="px-2 py-1 rounded text-xs font-bold ' + (c.status==='active'?'bg-green-100 text-green-800':'bg-red-100 text-red-800') + '">' + (c.status||'active').toUpperCase() + '</span></div>'
             + '</div>'
@@ -6151,7 +6176,7 @@ END:VCARD`;
             + '</div>'
             + '</div>'
             + '<div class="flex gap-2 justify-end border-t pt-4">'
-            + '<button class="btn btn-primary text-sm" onclick="showCompanyDetail(\'' + c.id + '\')">Manage Details</button>'
+            + '<button class="btn btn-primary text-sm" onclick="showCompanyDetail(\'' + c.id + '\')" data-testid="manage-company-' + c.id + '">Manage Details</button>'
             + '<button class="btn btn-secondary text-sm" onclick="openEditCompanyModal(\'' + c.id + '\')">Edit</button>'
             + '</div>'
             + '</div>'
@@ -6161,7 +6186,7 @@ END:VCARD`;
         updateCompanyManagement();
       } catch (e) {
         console.error('Render error:', e);
-        container.innerHTML = '<div class="text-red-500">Error loading companies. ' + e.message + '</div>';
+        container.innerHTML = '<div class="text-center p-8"><div class="text-red-600"><h3 class="text-2xl font-bold mb-4">❌ Error Loading Companies</h3><p class="mb-4">' + e.message + '</p><button class="btn btn-primary" onclick="renderCompanyList()">🔄 Retry</button></div></div>';
       }
     }
 

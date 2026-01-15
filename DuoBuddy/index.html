@@ -5659,6 +5659,208 @@ END:VCARD`;
       showToast('Card design removed');
     }
 
+
+    // ========== VIEW USER PROFILE FUNCTIONS ==========
+    
+    async function viewUserProfile(userId) {
+      console.log('Viewing user profile:', userId);
+      
+      try {
+        // Fetch user data
+        let user = allUsers ? allUsers.find(u => u.__backendId === userId) : null;
+        
+        if (!user) {
+          // If not in allUsers, try fetching from API
+          const r = await apiRequest('/api/admin/users/' + userId);
+          if (!r.ok) {
+            showToast('Failed to load user profile', 'error');
+            return;
+          }
+          const data = await r.json();
+          user = data.user;
+        }
+        
+        if (!user) {
+          showToast('User not found', 'error');
+          return;
+        }
+        
+        // Store current user being viewed
+        window.currentViewingUser = user;
+        
+        // Navigate to view-user page
+        showPage('view-user');
+        
+        // Populate user data
+        populateViewUserPage(user);
+        
+      } catch (e) {
+        console.error('Error viewing user profile:', e);
+        showToast('Error loading user profile', 'error');
+      }
+    }
+    
+    function populateViewUserPage(user) {
+      // Helper function to safely set text content
+      const setText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text || 'N/A';
+      };
+      
+      // Parse user data
+      const profileData = user.data ? (typeof user.data === 'string' ? JSON.parse(user.data) : user.data) : {};
+      
+      // Set title
+      setText('viewUserFullName', user.name || 'Unknown User');
+      
+      // Set avatar initial
+      const avatar = document.getElementById('viewUserAvatar');
+      if (avatar) {
+        const initial = (user.name || 'U').charAt(0).toUpperCase();
+        avatar.textContent = initial;
+      }
+      
+      // Set role with formatting
+      const roleEl = document.getElementById('viewUserRole');
+      if (roleEl) {
+        let roleText = 'User';
+        if (user.is_admin) roleText = '⭐ Super Admin';
+        else if (user.role === 'company_admin') roleText = '👔 Company Admin';
+        else if (user.role === 'employee') roleText = '👤 Employee';
+        roleEl.textContent = roleText;
+      }
+      
+      // Set username (locked field)
+      const usernameEl = document.getElementById('viewUserUsername');
+      if (usernameEl) {
+        usernameEl.innerHTML = '<span class="text-purple-600 font-semibold">@' + (user.username || 'unknown') + '</span><span class="text-xs text-gray-500 ml-2">🔒 Locked</span>';
+      }
+      
+      // Set basic info
+      setText('viewUserEmail', user.email);
+      setText('viewUserPhone', user.phone || 'Not provided');
+      
+      // Set company
+      const companyEl = document.getElementById('viewUserCompany');
+      if (companyEl) {
+        if (user.company_id) {
+          const company = companies ? companies.find(c => c.id === user.company_id) : null;
+          companyEl.textContent = company ? company.name : 'Company ID: ' + user.company_id;
+        } else {
+          companyEl.textContent = 'No company assigned';
+        }
+      }
+      
+      // Set status
+      const status = getUserStatus(user);
+      const statusBadge = document.getElementById('viewUserStatus');
+      const accountStatusText = document.getElementById('viewUserAccountStatus');
+      
+      if (statusBadge) {
+        statusBadge.textContent = status.toUpperCase();
+        statusBadge.className = 'px-3 py-1 rounded text-sm font-bold ';
+        if (status === 'active') statusBadge.className += 'bg-green-100 text-green-800';
+        else if (status === 'expired') statusBadge.className += 'bg-red-100 text-red-800';
+        else if (status === 'pending') statusBadge.className += 'bg-yellow-100 text-yellow-800';
+        else statusBadge.className += 'bg-gray-100 text-gray-800';
+      }
+      
+      if (accountStatusText) {
+        accountStatusText.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+      }
+      
+      // Set date joined
+      const dateJoined = profileData.created || user.createdAt || 'Unknown';
+      setText('viewUserDateJoined', formatDate(dateJoined));
+      
+      // Set job title
+      setText('viewUserJobTitle', profileData.jobTitle || 'Not specified');
+      
+      // Set about
+      setText('viewUserAbout', profileData.about || 'No information provided');
+      
+      // Show/hide admin actions based on current user role
+      const adminActions = document.getElementById('viewUserAdminActions');
+      if (adminActions) {
+        adminActions.style.display = (isAdmin || currentUser?.is_admin) ? 'block' : 'none';
+      }
+    }
+    
+    function formatDate(dateStr) {
+      if (!dateStr || dateStr === 'Unknown') return 'N/A';
+      try {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-MY', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+      } catch (e) {
+        return dateStr;
+      }
+    }
+    
+    function getUserStatus(user) {
+      const profileData = user.data ? (typeof user.data === 'string' ? JSON.parse(user.data) : user.data) : {};
+      const cards = profileData.cards || [];
+      const activeCards = cards.filter(c => c.status === 'active');
+      
+      if (activeCards.length > 0) {
+        const latestCard = activeCards.sort((a, b) => 
+          new Date(b.activationDate || 0) - new Date(a.activationDate || 0)
+        )[0];
+        
+        if (latestCard.expiryDate) {
+          const expiry = new Date(latestCard.expiryDate);
+          if (expiry < new Date()) return 'expired';
+        }
+        return 'active';
+      }
+      
+      const pendingCards = cards.filter(c => c.status === 'pending_approval');
+      if (pendingCards.length > 0) return 'pending';
+      
+      return 'no_card';
+    }
+    
+    function getStatusBadge(status) {
+      const badges = {
+        'active': '<span class="px-2 py-1 rounded text-xs font-bold bg-green-100 text-green-800">ACTIVE</span>',
+        'expired': '<span class="px-2 py-1 rounded text-xs font-bold bg-red-100 text-red-800">EXPIRED</span>',
+        'pending': '<span class="px-2 py-1 rounded text-xs font-bold bg-yellow-100 text-yellow-800">PENDING</span>',
+        'no_card': '<span class="px-2 py-1 rounded text-xs font-bold bg-gray-100 text-gray-800">NO CARD</span>'
+      };
+      return badges[status] || badges['no_card'];
+    }
+    
+    // Admin actions from view user page
+    function editUserFromView() {
+      const user = window.currentViewingUser;
+      if (user) {
+        openAdminUserModal(user.__backendId);
+      }
+    }
+    
+    function manageUserCards() {
+      const user = window.currentViewingUser;
+      if (user) {
+        // Navigate to user's card management - could open modal or navigate
+        showToast('Card management feature - to be implemented', 'info');
+      }
+    }
+    
+    function suspendUserFromView() {
+      const user = window.currentViewingUser;
+      if (user) {
+        if (confirm('Are you sure you want to suspend this user account?')) {
+          showToast('User suspension feature - to be implemented', 'info');
+        }
+      }
+    }
+    
+    // ========== END VIEW USER PROFILE FUNCTIONS ==========
+    
+
     function openAdminUserModal(userId) {
       const user = allUsers.find(u => u.__backendId === userId);
       if (!user) return;

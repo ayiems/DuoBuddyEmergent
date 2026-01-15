@@ -19,6 +19,18 @@ const mimeTypes = {
   '.txt': 'text/plain'
 };
 
+// Content Security Policy
+const CSP_HEADER = [
+  "default-src 'self'",
+  "img-src 'self' https://res.cloudinary.com https://quickchart.io data: blob:",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "connect-src 'self' https://*.emergentagent.com https://duobuddy.my",
+  "font-src 'self' data:",
+  "base-uri 'self'",
+  "form-action 'self'"
+].join('; ');
+
 const server = http.createServer((req, res) => {
   console.log(`${req.method} ${req.url}`);
 
@@ -44,7 +56,17 @@ const server = http.createServer((req, res) => {
         res.end(`Server Error: ${error.code}`, 'utf-8');
       }
     } else {
-      res.writeHead(200, { 'Content-Type': contentType });
+      // Security headers
+      const headers = {
+        'Content-Type': contentType,
+        'Content-Security-Policy': CSP_HEADER,
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'X-XSS-Protection': '1; mode=block',
+        'Referrer-Policy': 'strict-origin-when-cross-origin'
+      };
+      
+      res.writeHead(200, headers);
       res.end(content, 'utf-8');
     }
   });
@@ -52,4 +74,5 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Frontend server running at http://0.0.0.0:${PORT}/`);
+  console.log(`CSP enabled: ${CSP_HEADER}`);
 });

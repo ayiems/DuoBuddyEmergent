@@ -6618,11 +6618,14 @@ END:VCARD`;
           const status = getUserStatus(u);
           return (
             '<tr>'
-            + '<td class="font-semibold">' + u.name + '</td>'
-            + '<td>' + u.email + '</td>'
-            + '<td><span class="text-purple-600 font-semibold">' + u.username + '</span></td>'
+            + '<td class="font-semibold">' + (u.name || 'Unknown') + '</td>'
+            + '<td>' + (u.email || 'N/A') + '</td>'
+            + '<td><span class="text-purple-600 font-semibold">' + (u.username || 'N/A') + '</span></td>'
             + '<td>' + getStatusBadge(status) + '</td>'
-            + '<td><button class="btn btn-primary btn-sm" onclick="openAdminUserModal(\'' + u.__backendId + '\')">Manage</button></td>'
+            + '<td class="flex gap-2">'
+            + '<button class="btn btn-primary btn-sm" onclick="viewUserProfile(\'' + u.__backendId + '\')" data-testid="view-user-' + u.__backendId + '">👁️ View</button>'
+            + '<button class="btn btn-secondary btn-sm" onclick="openAdminUserModal(\'' + u.__backendId + '\')">Manage</button>'
+            + '</td>'
             + '</tr>'
           );
         }).join('');

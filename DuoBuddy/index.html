@@ -2602,21 +2602,19 @@
       const host = location.hostname;
       const port = location.port;
       
+      // Emergent Preview Environment
+      if (host.includes('preview.emergentagent.com')) {
+        return '/api';  // Kubernetes ingress routes /api/* to backend port 8001
+      }
+      
       // Localhost environment (Direct connection)
       if (host === 'localhost' || host === '127.0.0.1') {
         return port === '5050' ? '' : 'http://localhost:5050';
       }
       
-      // Vercel Preview environment (Needs public backend URL)
-      // Since Vercel is public, it cannot reach localhost. 
-      // Users MUST run ngrok or use a public backend.
-      // For now, we assume if on Vercel, try to hit the same domain (if backend is deployed there)
-      // OR provide a specific public backend URL if available.
+      // Vercel Preview environment
       if (host.includes('vercel.app')) {
-        // WARNING: Vercel cannot reach localhost:5050 directly. 
-        // You must use ngrok to expose localhost:5050 and put that URL here,
-        // OR deploy the backend to a public server.
-        return 'https://your-backend-url.ngrok-free.app'; // REPLACE THIS with actual ngrok URL
+        return 'https://your-backend-url.ngrok-free.app'; // REPLACE with actual backend
       }
       
       // Production environment
@@ -2627,7 +2625,6 @@
       // STRICT RULE: Use dynamic origin detection
       return window.location.origin;
     }
-    
     async function apiRequest(path, opts) {
       const o = opts || {};
       const h = o.headers || {};

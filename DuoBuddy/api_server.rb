@@ -13,8 +13,12 @@ end
 PORT = (ENV['PORT'] || '5050').to_i
 DEPLOYED_URL = ENV['preview_endpoint'] || 'https://profile-viewer-34.preview.emergentagent.com'
 ALLOWED_ORIGINS = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
   'http://localhost:8000',
   'http://127.0.0.1:8000',
+  'http://localhost:8001',
+  'http://127.0.0.1:8001',
   'http://localhost:5050',
   'http://127.0.0.1:5050',
   DEPLOYED_URL,

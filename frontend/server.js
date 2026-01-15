@@ -26,8 +26,8 @@ const mimeTypes = {
 const CSP_HEADER = [
   "default-src 'self'",
   "img-src 'self' https://res.cloudinary.com https://quickchart.io data: blob:",
-  "script-src 'self' 'unsafe-inline'",
-  "style-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com",
+  "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com",
   "connect-src 'self' https://*.emergentagent.com https://duobuddy.my",
   "font-src 'self' data:",
   "base-uri 'self'",

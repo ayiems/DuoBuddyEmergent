@@ -1739,6 +1739,96 @@
  </div>
 </div><!-- Admin User Management Modal -->
 
+
+<!-- View User Profile Page -->
+<div id="view-user" class="page">
+  <nav class="gradient-bg p-4 shadow-lg">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <a href="/" data-home="true" class="text-white text-3xl font-bold inline-flex items-center gap-3"><img src="https://res.cloudinary.com/dfd2jgoj1/image/upload/v1765868757/DuoBuddy_fm8lah.png" alt="DuoBuddy" style="height:40px;"> <span>DuoBuddy</span></a>
+      <div class="flex gap-4">
+        <button class="btn btn-secondary" onclick="history.back()">⬅️ Back</button>
+      </div>
+    </div>
+  </nav>
+  <div class="max-w-4xl mx-auto px-4 py-10">
+    <div class="card p-8">
+      <div class="flex justify-between items-start mb-6">
+        <h2 class="text-3xl font-bold text-gray-800" data-testid="view-user-title">User Profile</h2>
+        <span id="viewUserStatus" class="px-3 py-1 rounded text-sm font-bold" data-testid="user-status-badge">ACTIVE</span>
+      </div>
+      
+      <!-- User Avatar/Initial -->
+      <div class="flex items-center gap-6 mb-8 pb-6 border-b">
+        <div id="viewUserAvatar" class="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-4xl font-bold">
+          U
+        </div>
+        <div class="flex-1">
+          <h3 id="viewUserFullName" class="text-2xl font-bold text-gray-800" data-testid="user-full-name">Loading...</h3>
+          <p id="viewUserRole" class="text-lg text-gray-600" data-testid="user-role">Role</p>
+        </div>
+      </div>
+      
+      <!-- User Information Grid -->
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-semibold text-gray-600 mb-1">Username</label>
+          <div id="viewUserUsername" class="flex items-center gap-2 text-gray-900 font-mono bg-gray-50 p-3 rounded" data-testid="user-username">
+            <span class="text-purple-600 font-semibold">@username</span>
+            <span class="text-xs text-gray-500 ml-2">🔒 Locked</span>
+          </div>
+          <p class="text-xs text-gray-500 mt-1">Username cannot be changed</p>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-semibold text-gray-600 mb-1">Email Address</label>
+          <div id="viewUserEmail" class="text-gray-900 bg-gray-50 p-3 rounded" data-testid="user-email">email@example.com</div>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-semibold text-gray-600 mb-1">Phone Number</label>
+          <div id="viewUserPhone" class="text-gray-900 bg-gray-50 p-3 rounded" data-testid="user-phone">+60 12-345 6789</div>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-semibold text-gray-600 mb-1">Company</label>
+          <div id="viewUserCompany" class="text-gray-900 bg-gray-50 p-3 rounded" data-testid="user-company">No company assigned</div>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-semibold text-gray-600 mb-1">Account Status</label>
+          <div id="viewUserAccountStatus" class="text-gray-900 bg-gray-50 p-3 rounded" data-testid="user-account-status">Active</div>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-semibold text-gray-600 mb-1">Date Joined</label>
+          <div id="viewUserDateJoined" class="text-gray-900 bg-gray-50 p-3 rounded" data-testid="user-date-joined">N/A</div>
+        </div>
+        
+        <div class="md:col-span-2">
+          <label class="block text-sm font-semibold text-gray-600 mb-1">Job Title</label>
+          <div id="viewUserJobTitle" class="text-gray-900 bg-gray-50 p-3 rounded" data-testid="user-job-title">N/A</div>
+        </div>
+        
+        <div class="md:col-span-2">
+          <label class="block text-sm font-semibold text-gray-600 mb-1">About</label>
+          <div id="viewUserAbout" class="text-gray-900 bg-gray-50 p-3 rounded min-h-[4rem]" data-testid="user-about">N/A</div>
+        </div>
+      </div>
+      
+      <!-- Admin Actions (only visible to admins) -->
+      <div id="viewUserAdminActions" class="mt-8 pt-6 border-t" style="display: none;">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">Admin Actions</h3>
+        <div class="flex gap-3 flex-wrap">
+          <button class="btn btn-secondary" onclick="editUserFromView()" data-testid="edit-user-btn">✏️ Edit User</button>
+          <button class="btn btn-secondary" onclick="manageUserCards()" data-testid="manage-cards-btn">🎴 Manage Cards</button>
+          <button class="btn btn-danger" onclick="suspendUserFromView()" data-testid="suspend-user-btn">⛔ Suspend Account</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <!-- Company Dashboard -->
 <div id="company-dashboard" class="page">
    <nav class="gradient-bg p-4 shadow-lg">

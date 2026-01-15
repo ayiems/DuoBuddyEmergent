@@ -2603,21 +2603,22 @@
       const port = location.port;
       
       // Emergent Preview Environment
-      if (host.includes('preview.emergentagent.com')) {
-        return '/api';  // Kubernetes ingress routes /api/* to backend port 8001
+      // Kubernetes ingress routes /api/* requests to backend
+      if (host.includes('preview.emergentagent.com') || host.includes('emergentagent.com')) {
+        return '';  // Use relative path, same origin
       }
       
-      // Localhost environment (Direct connection)
+      // Localhost environment (Direct connection to Ruby server)
       if (host === 'localhost' || host === '127.0.0.1') {
         return port === '5050' ? '' : 'http://localhost:5050';
       }
       
       // Vercel Preview environment
       if (host.includes('vercel.app')) {
-        return 'https://your-backend-url.ngrok-free.app'; // REPLACE with actual backend
+        return 'https://your-backend-url.ngrok-free.app';
       }
       
-      // Production environment
+      // Production environment  
       return ''; 
     })();
     

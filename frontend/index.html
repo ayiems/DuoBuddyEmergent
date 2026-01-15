@@ -3184,6 +3184,8 @@
         loadInventory(); 
         refreshAdminCompanyOrders();
         loadUsernameRequests();
+        // Re-initialize router to attach event listeners to dynamically loaded content
+        setTimeout(() => initRouter(), 100);
       }
       
       try {

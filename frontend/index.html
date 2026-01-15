@@ -3253,7 +3253,7 @@ END:VCARD`;
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `${user.name.replace(/\s+/g, '_')}.vcf`;
+          a.download = `${p.name.replace(/\s+/g, '_')}.vcf`;
           a.click();
           window.URL.revokeObjectURL(url);
           
